@@ -1,0 +1,296 @@
+package com.livetranslate.app.audio
+
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioTrack
+import android.os.Build
+import android.util.Log
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.thread
+
+/**
+ * Plays translated PCM from Live Translate on a dedicated writer thread.
+ *
+ * Critical design points:
+ * - Never write AudioTrack on the main/UI thread (blocking write freezes the app).
+ * - Mark output as not capturable so MediaProjection system-audio capture cannot
+ *   pick up the translation and create a feedback loop (same sentence repeating).
+ * - Drop excess queued audio when lagging instead of growing forever / crashing.
+ */
+class TranslatedAudioPlayer {
+    private val enabled = AtomicBoolean(false)
+    private val released = AtomicBoolean(false)
+
+    /**
+     * Logical volume: 0.0–1.0 maps to AudioTrack volume;
+     * 1.0–[MAX_VOLUME] applies extra digital gain on PCM (boost above 100%).
+     */
+    @Volatile
+    private var volume = 0.8f
+
+    private val queue = LinkedBlockingQueue<ByteArray>(MAX_QUEUE_CHUNKS)
+    private val trackRef = AtomicReference<AudioTrack?>(null)
+
+    /** Written from the event collector thread, read by the writer thread. */
+    @Volatile
+    private var sampleRate = DEFAULT_SAMPLE_RATE
+
+    // Counter for diagnostics: how many chunks we dropped due to a full queue
+    private val droppedChunks = AtomicInteger(0)
+
+    private val writer = thread(
+        name = "translated-audio-writer",
+        isDaemon = true,
+        start = true,
+    ) {
+        writeLoop()
+    }
+
+    fun setEnabled(value: Boolean) {
+        val was = enabled.getAndSet(value)
+        if (!value && was) {
+            queue.clear()
+            runCatching {
+                trackRef.get()?.pause()
+                trackRef.get()?.flush()
+            }
+        } else if (value && !was) {
+            runCatching { trackRef.get()?.play() }
+        }
+    }
+
+    fun setVolume(value: Float) {
+        volume = value.coerceIn(0f, MAX_VOLUME)
+        // Hardware path only goes to 1.0; boost above that is done in software.
+        runCatching { trackRef.get()?.setVolume(trackVolume()) }
+    }
+
+    /** AudioTrack API max is 1.0 */
+    private fun trackVolume(): Float = volume.coerceIn(0f, 1f)
+
+    /** Extra digital gain when user sets > 100% */
+    private fun digitalGain(): Float = if (volume > 1f) volume else 1f
+
+    /**
+     * Enqueue a PCM chunk. Non-blocking for callers.
+     * If the queue is full, drop the oldest chunk (prefer low latency over backlog).
+     */
+    fun playPcm(chunk: ByteArray, mimeType: String?) {
+        if (!enabled.get() || released.get() || chunk.isEmpty()) return
+        parseSampleRate(mimeType)?.let { rate ->
+            if (rate != sampleRate && rate in 8_000..48_000) {
+                sampleRate = rate
+                // Drop chunks queued at the old rate so they don't play at the
+                // new speed, then recreate the track on the writer thread.
+                queue.clear()
+                queue.offer(RECREATE_SENTINEL)
+            }
+        }
+        // Drop oldest if full to avoid unbounded memory / multi-second lag
+        while (!queue.offer(chunk.copyOf())) {
+            queue.poll()
+            droppedChunks.incrementAndGet()
+            Log.w(TAG, "queue full, dropping oldest chunk (totalDropped=${droppedChunks.get()})")
+            if (released.get()) return
+        }
+    }
+
+    fun release() {
+        if (!released.compareAndSet(false, true)) return
+        enabled.set(false)
+        queue.clear()
+        queue.offer(STOP_SENTINEL)
+        // No writer.join here — this runs on the main thread during teardown.
+        // The STOP sentinel makes the writer exit and release the track itself;
+        // releaseTrack below is idempotent for the race where both run.
+        releaseTrack()
+    }
+
+    private fun writeLoop() {
+        while (!released.get()) {
+            val chunk = try {
+                queue.poll(200, TimeUnit.MILLISECONDS) ?: continue
+            } catch (_: InterruptedException) {
+                break
+            }
+            if (chunk === STOP_SENTINEL) break
+            if (chunk === RECREATE_SENTINEL) {
+                releaseTrack()
+                continue
+            }
+            if (!enabled.get()) continue
+            try {
+                val track = ensureTrack(sampleRate) ?: continue
+                val toWrite = applyDigitalGainIfNeeded(chunk)
+                var offset = 0
+                while (offset < toWrite.size && enabled.get() && !released.get()) {
+                    val remaining = toWrite.size - offset
+                    val written = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        // Use blocking write on the dedicated writer thread to avoid
+                        // partial/0-length non-blocking writes causing truncation.
+                        try {
+                            track.write(toWrite, offset, remaining, AudioTrack.WRITE_BLOCKING)
+                        } catch (t: Throwable) {
+                            Log.w(TAG, "AudioTrack.write threw", t)
+                            -1
+                        }
+                    } else {
+                        try {
+                            track.write(toWrite, offset, remaining)
+                        } catch (t: Throwable) {
+                            Log.w(TAG, "AudioTrack.write threw", t)
+                            -1
+                        }
+                    }
+                    when {
+                        written > 0 -> offset += written
+                        written == 0 -> {
+                            // Blocking write shouldn't return 0; if it does, briefly yield.
+                            Thread.sleep(5)
+                        }
+                        else -> {
+                            Log.w(TAG, "AudioTrack.write error=$written, recreating")
+                            releaseTrack()
+                            break
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                Log.e(TAG, "writeLoop error", t)
+                releaseTrack()
+            }
+        }
+        releaseTrack()
+    }
+
+    private fun ensureTrack(rate: Int): AudioTrack? {
+        val existing = trackRef.get()
+        if (existing != null && existing.sampleRate == rate &&
+            existing.playState != AudioTrack.PLAYSTATE_STOPPED
+        ) {
+            if (existing.playState != AudioTrack.PLAYSTATE_PLAYING && enabled.get()) {
+                runCatching { existing.play() }
+            }
+            return existing
+        }
+        releaseTrack()
+        if (rate <= 0) return null
+
+        val minBuf = AudioTrack.getMinBufferSize(
+            rate,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+        )
+        if (minBuf <= 0) {
+            Log.e(TAG, "invalid min buffer for rate=$rate: $minBuf")
+            return null
+        }
+        // ~500ms buffer — more headroom to avoid underruns on bursty input
+        val bufferSize = (minBuf * 5).coerceAtLeast(rate / 2)
+
+        val attrs = AudioAttributes.Builder()
+            // Not USAGE_MEDIA: system audio capture matches USAGE_MEDIA and would
+            // re-ingest translation → infinite "same sentence" loop.
+            .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    setAllowedCapturePolicy(AudioAttributes.ALLOW_CAPTURE_BY_NONE)
+                }
+            }
+            .build()
+
+        val format = AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+            .setSampleRate(rate)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .build()
+
+        val track = try {
+            AudioTrack.Builder()
+                .setAudioAttributes(attrs)
+                .setAudioFormat(format)
+                .setBufferSizeInBytes(bufferSize)
+                .setTransferMode(AudioTrack.MODE_STREAM)
+                .build()
+        } catch (t: Throwable) {
+            Log.e(TAG, "AudioTrack create failed", t)
+            return null
+        }
+
+        if (track.state != AudioTrack.STATE_INITIALIZED) {
+            Log.e(TAG, "AudioTrack not initialized")
+            runCatching { track.release() }
+            return null
+        }
+
+        runCatching {
+            track.setVolume(trackVolume())
+            track.play()
+        }.onFailure {
+            Log.e(TAG, "AudioTrack play failed", it)
+            runCatching { track.release() }
+            return null
+        }
+
+        trackRef.set(track)
+        sampleRate = rate
+        Log.i(TAG, "AudioTrack ready rate=$rate buf=$bufferSize")
+        return track
+    }
+
+    private fun releaseTrack() {
+        val t = trackRef.getAndSet(null) ?: return
+        runCatching {
+            t.pause()
+            t.flush()
+            t.release()
+        }
+    }
+
+    /**
+     * Scale 16-bit LE PCM samples when logical volume > 1.0.
+     * Hard-clamps to Short range to avoid wrap-around distortion.
+     */
+    private fun applyDigitalGainIfNeeded(chunk: ByteArray): ByteArray {
+        val gain = digitalGain()
+        if (gain <= 1.0001f || chunk.size < 2) return chunk
+        val out = ByteArray(chunk.size)
+        var i = 0
+        while (i + 1 < chunk.size) {
+            val lo = chunk[i].toInt() and 0xFF
+            val hi = chunk[i + 1].toInt()
+            val sample = (hi shl 8) or lo // little-endian signed short via toShort later
+            val signed = sample.toShort().toInt()
+            val boosted = (signed * gain).toInt()
+                .coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt())
+            out[i] = (boosted and 0xFF).toByte()
+            out[i + 1] = ((boosted shr 8) and 0xFF).toByte()
+            i += 2
+        }
+        // Odd trailing byte (shouldn't happen for PCM16) — copy as-is
+        if (i < chunk.size) out[i] = chunk[i]
+        return out
+    }
+
+    private fun parseSampleRate(mimeType: String?): Int? {
+        if (mimeType.isNullOrBlank()) return null
+        val match = Regex("rate=(\\d+)").find(mimeType) ?: return null
+        return match.groupValues[1].toIntOrNull()
+    }
+
+    companion object {
+        private const val TAG = "TranslatedAudioPlayer"
+        private const val DEFAULT_SAMPLE_RATE = 24_000
+        // Increase queue capacity to be more resilient to bursty input
+        private const val MAX_QUEUE_CHUNKS = 128
+        /** 200% — enough to sit above source video without extreme clipping. */
+        const val MAX_VOLUME = 2.0f
+        private val STOP_SENTINEL = ByteArray(0)
+        private val RECREATE_SENTINEL = ByteArray(1)
+    }
+}
