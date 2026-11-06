@@ -30,8 +30,8 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
 
-      - name: Install Android SDK 36
-        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+      - name: Install Android SDK 37.0 and Build Tools 36.0.0
+        run: sdkmanager --channel=0 --install "platforms;android-37.0" "build-tools;36.0.0"
 
       - name: Grant Gradle execute permission
         run: chmod +x ./gradlew
