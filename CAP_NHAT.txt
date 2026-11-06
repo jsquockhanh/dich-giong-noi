@@ -1,0 +1,14 @@
+CAP NHAT DQT DICH TRUC TIEP
+
+Da cap nhat trong goi nay:
+1. Them nut "Doi chieu hoi thoai" tren man hinh chinh.
+   - Khi nguoi dung chon nguon la Tieng Viet va dich sang ngon ngu doi thoai, co the bam nut khi doi luot noi.
+   - Nut hoan doi ngon ngu nguon/dich nhanh; neu nguon dang de tu dong, lan bam dau tien chuyen huong dich ve Tieng Viet.
+   - Danh muc ngon ngu co san cua du an bao gom Trung, Nhat, Han, Anh, Phap va nhieu ngon ngu khac.
+2. Giam thoi gian cho truoc khi day cau noi dich bang giong tuy chon tu 1200ms xuong 650ms.
+3. Giu nguyen cac cau hinh, khoa API, dich vu va cac chuc nang khac.
+
+GIOI HAN CAN BIET:
+- Goi nay chua co tinh nang chup man hinh/OCR theo vung chon va vuot chuyen vung. Phan nay can bo sung pipeline MediaProjection + OCR + giao dien chon vung rieng; khong duoc gia lap la da hoat dong.
+- Che do hoi thoai hien tai la doi chieu thu cong bang nut, chua tu dong phat hien ai dang noi va tu dong dao chieu.
+- Chua xuat APK. Thu build tai moi truong nay khong tai duoc Gradle distribution do moi truong khong co ket noi mang (UnknownHostException: services.gradle.org). Hay dung GitHub Actions de build va gui log neu co loi.
