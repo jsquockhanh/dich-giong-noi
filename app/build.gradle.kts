@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "com.livetranslate.app"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 0
         }
     }
@@ -26,13 +26,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Signing must be deterministic across CI runs (fresh VMs regenerate a
-    // random debug keystore each run, which forces users to uninstall before
-    // every update), but the real keystore must not live in the repo. It is
-    // provided via Gradle properties — CI decodes the SIGNING_KEYSTORE secret
-    // and passes -P flags; local builds read local.properties. Without any,
-    // builds fall back to the machine debug keystore: fine for development,
-    // but those APKs cannot upgrade over CI-signed ones. See README "Signing".
+    // Signing remains optional for debug CI builds; no keystore is stored in the repository.
     val keystoreProperties = Properties().apply {
         rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
     }
@@ -53,7 +47,7 @@ android {
         }
     }
     if (signingConfigs.findByName("app") == null) {
-        logger.warn("live-translate: KEYSTORE_FILE is not configured — APKs will be signed with the machine debug keystore and cannot install over CI-signed builds. See README \"Signing\".")
+        logger.warn("live-translate: KEYSTORE_FILE is not configured — APKs will use the machine debug keystore.")
     }
 
     buildTypes {
@@ -96,7 +90,7 @@ kotlin {
 }
 
 dependencies {
-    // Align with MIUIX 0.9.x (Compose Multiplatform 1.11 / Kotlin 2.4)
+    // Existing application dependencies retained.
     val composeBom = platform("androidx.compose:compose-bom:2025.05.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
