@@ -232,6 +232,9 @@ class MainActivity : ComponentActivity() {
                                 onSourceLanguage = { code ->
                                     scope.launch { subtitleVm.setSourceLanguage(code) }
                                 },
+                                onSwapConversationLanguages = {
+                                    scope.launch { subtitleVm.swapConversationLanguages() }
+                                },
                                 onAudioSource = { mode ->
                                     scope.launch { subtitleVm.setAudioSource(mode) }
                                 },

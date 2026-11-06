@@ -231,4 +231,6 @@
   <string name="subtitle_captions_toggle_hint">Tắt chữ để chỉ nghe giọng dịch. Phiên dịch vẫn tiếp tục.</string>
   <string name="subtitle_captions_toggle">Hiển thị phụ đề</string>
   <string name="settings_voice_stream_summary">Âm thanh được phát trực tiếp từ phiên dịch để giảm thời gian chờ.</string>
+    <string name="conversation_swap_direction">Đổi chiều hội thoại</string>
+    <string name="conversation_swap_hint">Khi đổi lượt nói, nhấn nút này để chuyển nhanh ngôn ngữ nguồn và ngôn ngữ đích. Chọn nguồn là Tiếng Việt và đích là ngôn ngữ đối thoại để bắt đầu.</string>
 </resources>

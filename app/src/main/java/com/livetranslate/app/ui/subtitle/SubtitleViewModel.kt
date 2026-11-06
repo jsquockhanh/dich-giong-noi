@@ -53,6 +53,23 @@ class SubtitleViewModel(
         }
     }
 
+    /**
+     * Switches the active conversation direction. If the source was automatic,
+     * use Vietnamese as the return direction so the first tap is predictable.
+     * The user can tap again to switch back without reopening language pickers.
+     */
+    suspend fun swapConversationLanguages() {
+        settingsRepository.update { current ->
+            val currentSource = SupportedLanguages.canonicalSourceOrAuto(current.sourceLanguageCode)
+            val nextSource = current.targetLanguageCode
+            val nextTarget = if (currentSource == "auto") "vi" else currentSource
+            current.copy(
+                sourceLanguageCode = nextSource,
+                targetLanguageCode = nextTarget,
+            )
+        }
+    }
+
     suspend fun setAudioSource(mode: AudioSourceMode) {
         settingsRepository.update { it.copy(audioSourceMode = mode) }
     }

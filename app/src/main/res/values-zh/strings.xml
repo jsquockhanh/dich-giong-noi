@@ -225,4 +225,6 @@
     <string name="msg_start_failed">启动失败：%1$s</string>
     <string name="msg_requesting_projection">请求录屏权限…</string>
     <string name="msg_key_saved">API Key 已保存</string>
+    <string name="conversation_swap_direction">切换对话方向</string>
+    <string name="conversation_swap_hint">轮到另一方讲话时，点击此按钮快速交换源语言和目标语言。</string>
 </resources>

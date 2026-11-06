@@ -58,6 +58,7 @@ fun SubtitleScreen(
     exportMessage: String?,
     onTargetLanguage: (String) -> Unit,
     onSourceLanguage: (String) -> Unit,
+    onSwapConversationLanguages: () -> Unit,
     onAudioSource: (AudioSourceMode) -> Unit,
     onOutputMode: (Boolean, Boolean) -> Unit,
     onStart: () -> Unit,
@@ -182,6 +183,21 @@ fun SubtitleScreen(
                     value = stringResource(SupportedLanguages.labelResOf(settings.targetLanguageCode)),
                     onClick = { showTargetPicker = true },
                     modifier = Modifier.fillMaxWidth(),
+                )
+                Button(
+                    onClick = onSwapConversationLanguages,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    colors = ButtonDefaults.buttonColors(),
+                ) {
+                    Text(
+                        text = stringResource(R.string.conversation_swap_direction),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.conversation_swap_hint),
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
                 Text(
                     text = stringResource(R.string.subtitle_source_hint),

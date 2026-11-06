@@ -857,7 +857,7 @@ class SubtitleSessionService : Service() {
         private const val TRANSLATION_START_UNITS = 3
         private const val MAX_PENDING_TRANSLATION_AUDIO_CHUNKS = 100
         private const val MAX_PENDING_TRANSLATION_TRANSCRIPTS = 128
-        private const val SPEECH_IDLE_FLUSH_MS = 1_200L
+        private const val SPEECH_IDLE_FLUSH_MS = 650L
         private const val TAG = "SubtitleSessionService"
         private const val NOTIFICATION_ID = 42
         private const val PREVIEW_THROTTLE_MS = 200L
