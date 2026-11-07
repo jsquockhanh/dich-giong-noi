@@ -315,8 +315,7 @@ fun SettingsScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "你好！
-Xin chào! Đây là phụ đề xem trước.",
+                        text = "你好！\nXin chào! Đây là phụ đề xem trước.",
                         fontSize = settings.fontSizeSp.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,
