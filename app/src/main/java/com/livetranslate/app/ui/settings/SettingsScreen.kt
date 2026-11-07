@@ -1,6 +1,9 @@
 package com.livetranslate.app.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -297,34 +302,35 @@ fun SettingsScreen(
                     valueRange = 0f..0.95f,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                OutlinedTextField(
-                    value = settings.textColorHex,
-                    onValueChange = { value -> if (value.length <= 9) viewModel.update { it.copy(textColorHex = value) } },
-                    label = { androidx.compose.material3.Text("Màu chữ phụ đề (HEX)") },
-                    singleLine = true,
-                    colors = fieldColors,
-                    modifier = Modifier.fillMaxWidth(),
+                Text("Màu chữ phụ đề", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                ColorSwatchRows(
+                    colors = listOf("#FFFFFF", "#000000", "#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#007AFF", "#AF52DE", "#FF2D55", "#8E8E93"),
+                    selected = settings.textColorHex,
+                    onSelect = { color -> viewModel.update { it.copy(textColorHex = color) } },
                 )
-                OutlinedTextField(
-                    value = settings.backgroundColorHex,
-                    onValueChange = { value -> if (value.length <= 9) viewModel.update { it.copy(backgroundColorHex = value) } },
-                    label = { androidx.compose.material3.Text("Màu nền phụ đề (HEX)") },
-                    singleLine = true,
-                    colors = fieldColors,
-                    modifier = Modifier.fillMaxWidth(),
+                Text("Màu nền phụ đề", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                ColorSwatchRows(
+                    colors = listOf("#000000", "#FFFFFF", "#263238", "#37474F", "#0D47A1", "#4A148C", "#B71C1C", "#1B5E20", "#E65100", "#607D8B"),
+                    selected = settings.backgroundColorHex,
+                    onSelect = { color -> viewModel.update { it.copy(backgroundColorHex = color) } },
                 )
-                Text("Mã màu ví dụ: #FFFFFF, #000000, #FFCC00", fontSize = 12.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 SettingSwitchRow(
                     title = "Chữ phụ đề in đậm",
                     summary = "Bật hoặc tắt kiểu chữ đậm trên phụ đề nổi",
                     checked = settings.isBoldFont,
-                    onCheckedChange = { value -> viewModel.update { it.copy(isBoldFont = value) } },
+                    onCheckedChange = { enabled -> viewModel.update { it.copy(isBoldFont = enabled) } },
                 )
                 SettingSwitchRow(
-                    title = "Hiện logo nổi",
-                    summary = "Cấu hình lưu trạng thái; điều khiển logo nổi cần được bật trong dịch vụ overlay",
-                    checked = settings.showFloatingLogo,
-                    onCheckedChange = { value -> viewModel.update { it.copy(showFloatingLogo = value) } },
+                    title = "Viền chữ phụ đề",
+                    summary = "Làm nổi chữ bằng viền tương phản",
+                    checked = settings.outlineEnabled,
+                    onCheckedChange = { enabled -> viewModel.update { it.copy(outlineEnabled = enabled) } },
+                )
+                Text("Màu viền chữ", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                ColorSwatchRows(
+                    colors = listOf("#000000", "#FFFFFF"),
+                    selected = settings.outlineColorHex,
+                    onSelect = { color -> viewModel.update { it.copy(outlineColorHex = color) } },
                 )
             }
             SettingSwitchRow(
@@ -429,19 +435,30 @@ fun SettingsScreen(
                     fontSize = 12.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
-                Text("Độ trễ âm thanh dịch: ${settings.translatedAudioDelayMs} ms", fontSize = 13.sp)
+                Text(
+                    text = "Độ trễ âm thanh dịch: ${"%.1f".format(settings.translatedAudioDelayMs / 1000f)} giây",
+                    fontSize = 13.sp,
+                )
                 Slider(
-                    value = settings.translatedAudioDelayMs.toFloat(),
-                    onValueChange = { value -> viewModel.update { it.copy(translatedAudioDelayMs = value.toInt()) } },
-                    valueRange = 0f..5000f,
+                    value = settings.translatedAudioDelayMs / 1000f,
+                    onValueChange = { seconds -> viewModel.update { it.copy(translatedAudioDelayMs = (seconds * 1000).toInt()) } },
+                    valueRange = 0f..10f,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text("Bộ đệm âm thanh: ${settings.translatedAudioBufferMs} ms", fontSize = 13.sp)
+                Text(
+                    text = "Bộ đệm âm thanh: ${"%.1f".format(settings.translatedAudioBufferMs / 1000f)} giây",
+                    fontSize = 13.sp,
+                )
                 Slider(
-                    value = settings.translatedAudioBufferMs.toFloat(),
-                    onValueChange = { value -> viewModel.update { it.copy(translatedAudioBufferMs = value.toInt()) } },
-                    valueRange = 0f..2000f,
+                    value = settings.translatedAudioBufferMs / 1000f,
+                    onValueChange = { seconds -> viewModel.update { it.copy(translatedAudioBufferMs = (seconds * 1000).toInt()) } },
+                    valueRange = 0f..10f,
                     modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = "Thời gian hiển thị theo giây; ví dụ 2,0 giây = 2.000 ms.",
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
             }
         }
@@ -485,6 +502,36 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(28.dp))
+    }
+}
+
+@Composable
+private fun ColorSwatchRows(
+    colors: List<String>,
+    selected: String,
+    onSelect: (String) -> Unit,
+) {
+    colors.chunked(5).forEach { rowColors ->
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            rowColors.forEach { hex ->
+                val color = runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(Color.White)
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .background(color, CircleShape)
+                        .border(
+                            width = if (selected.equals(hex, ignoreCase = true)) 3.dp else 1.dp,
+                            color = if (selected.equals(hex, ignoreCase = true)) Booth.Accent else MiuixTheme.colorScheme.outline,
+                            shape = CircleShape,
+                        )
+                        .clickable { onSelect(hex) },
+                )
+            }
+        }
     }
 }
 

@@ -726,22 +726,25 @@ class SubtitleOverlayController(
 
     private fun applySettingsToViews() {
         val alpha = (settings.backgroundAlpha * 255).toInt().coerceIn(0, 242)
-        val backgroundColor = runCatching { Color.parseColor(settings.backgroundColorHex) }.getOrDefault(Color.BLACK)
-        val textColor = runCatching { Color.parseColor(settings.textColorHex) }.getOrDefault(Color.WHITE)
+        val backgroundColor = runCatching { Color.parseColor(settings.backgroundColorHex) }
+            .getOrDefault(Color.BLACK)
         (rootView?.background as? GradientDrawable)?.setColor(
             Color.argb(alpha, Color.red(backgroundColor), Color.green(backgroundColor), Color.blue(backgroundColor)),
         )
-        val face = if (settings.isBoldFont) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-        inputView?.apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp * 0.9f)
-            setTextColor(textColor)
-            typeface = face
+        val textColor = runCatching { Color.parseColor(settings.textColorHex) }.getOrDefault(Color.WHITE)
+        val outlineColor = runCatching { Color.parseColor(settings.outlineColorHex) }.getOrDefault(Color.BLACK)
+        listOfNotNull(inputView, outputView).forEach { textView ->
+            textView.setTextColor(textColor)
+            textView.typeface = if (settings.isBoldFont) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+            textView.setShadowLayer(
+                if (settings.outlineEnabled) 2.5f else 0f,
+                0f,
+                0f,
+                if (settings.outlineEnabled) outlineColor else Color.TRANSPARENT,
+            )
         }
-        outputView?.apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp)
-            setTextColor(textColor)
-            typeface = face
-        }
+        inputView?.setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp * 0.9f)
+        outputView?.setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp)
     }
 
     private fun applyTranscriptsToViews() {

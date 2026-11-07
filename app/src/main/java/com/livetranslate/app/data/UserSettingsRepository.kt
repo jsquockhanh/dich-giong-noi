@@ -23,13 +23,12 @@ class UserSettingsRepository(private val context: Context) {
         val fontSizeSp = floatPreferencesKey("font_size_sp")
         val textColorHex = stringPreferencesKey("text_color_hex")
         val backgroundColorHex = stringPreferencesKey("background_color_hex")
-        val isBoldFont = booleanPreferencesKey("is_bold_font")
-        val translatedAudioBufferMs = intPreferencesKey("translated_audio_buffer_ms")
-        val translatedAudioDelayMs = intPreferencesKey("translated_audio_delay_ms")
-        val videoDelayMs = intPreferencesKey("video_delay_ms")
-        val originalAudioDelayMs = intPreferencesKey("original_audio_delay_ms")
-        val showFloatingLogo = booleanPreferencesKey("show_floating_logo")
         val backgroundAlpha = floatPreferencesKey("background_alpha")
+        val isBoldFont = booleanPreferencesKey("is_bold_font")
+        val outlineEnabled = booleanPreferencesKey("outline_enabled")
+        val outlineColorHex = stringPreferencesKey("outline_color_hex")
+        val translatedAudioDelayMs = intPreferencesKey("translated_audio_delay_ms")
+        val translatedAudioBufferMs = intPreferencesKey("translated_audio_buffer_ms")
         val bilingual = booleanPreferencesKey("bilingual")
         val captionsEnabled = booleanPreferencesKey("captions_enabled")
         val playTranslatedAudio = booleanPreferencesKey("play_translated_audio")
@@ -58,13 +57,12 @@ class UserSettingsRepository(private val context: Context) {
             prefs[Keys.fontSizeSp] = next.fontSizeSp
             prefs[Keys.textColorHex] = next.textColorHex
             prefs[Keys.backgroundColorHex] = next.backgroundColorHex
-            prefs[Keys.isBoldFont] = next.isBoldFont
-            prefs[Keys.translatedAudioBufferMs] = next.translatedAudioBufferMs.coerceIn(0, 2000)
-            prefs[Keys.translatedAudioDelayMs] = next.translatedAudioDelayMs.coerceIn(0, 10000)
-            prefs[Keys.videoDelayMs] = next.videoDelayMs.coerceIn(0, 10000)
-            prefs[Keys.originalAudioDelayMs] = next.originalAudioDelayMs.coerceIn(0, 10000)
-            prefs[Keys.showFloatingLogo] = next.showFloatingLogo
             prefs[Keys.backgroundAlpha] = next.backgroundAlpha
+            prefs[Keys.isBoldFont] = next.isBoldFont
+            prefs[Keys.outlineEnabled] = next.outlineEnabled
+            prefs[Keys.outlineColorHex] = next.outlineColorHex
+            prefs[Keys.translatedAudioDelayMs] = next.translatedAudioDelayMs
+            prefs[Keys.translatedAudioBufferMs] = next.translatedAudioBufferMs
             prefs[Keys.bilingual] = next.bilingual
             prefs[Keys.captionsEnabled] = next.captionsEnabled
             prefs[Keys.playTranslatedAudio] = next.playTranslatedAudio
@@ -84,7 +82,12 @@ class UserSettingsRepository(private val context: Context) {
         update {
             it.copy(
                 fontSizeSp = UserSettings.Defaults.FONT_SIZE_SP,
+                textColorHex = UserSettings.Defaults.TEXT_COLOR_HEX,
+                backgroundColorHex = UserSettings.Defaults.BACKGROUND_COLOR_HEX,
                 backgroundAlpha = UserSettings.Defaults.BACKGROUND_ALPHA,
+                isBoldFont = UserSettings.Defaults.IS_BOLD_FONT,
+                outlineEnabled = UserSettings.Defaults.OUTLINE_ENABLED,
+                outlineColorHex = UserSettings.Defaults.OUTLINE_COLOR_HEX,
                 bilingual = UserSettings.Defaults.BILINGUAL,
             )
         }
@@ -102,13 +105,12 @@ class UserSettingsRepository(private val context: Context) {
         fontSizeSp = this[Keys.fontSizeSp] ?: UserSettings.Defaults.FONT_SIZE_SP,
         textColorHex = this[Keys.textColorHex] ?: UserSettings.Defaults.TEXT_COLOR_HEX,
         backgroundColorHex = this[Keys.backgroundColorHex] ?: UserSettings.Defaults.BACKGROUND_COLOR_HEX,
-        isBoldFont = this[Keys.isBoldFont] ?: UserSettings.Defaults.IS_BOLD_FONT,
-        translatedAudioBufferMs = this[Keys.translatedAudioBufferMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_BUFFER_MS,
-        translatedAudioDelayMs = this[Keys.translatedAudioDelayMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_DELAY_MS,
-        videoDelayMs = this[Keys.videoDelayMs] ?: UserSettings.Defaults.VIDEO_DELAY_MS,
-        originalAudioDelayMs = this[Keys.originalAudioDelayMs] ?: UserSettings.Defaults.ORIGINAL_AUDIO_DELAY_MS,
-        showFloatingLogo = this[Keys.showFloatingLogo] ?: UserSettings.Defaults.SHOW_FLOATING_LOGO,
         backgroundAlpha = this[Keys.backgroundAlpha] ?: UserSettings.Defaults.BACKGROUND_ALPHA,
+        isBoldFont = this[Keys.isBoldFont] ?: UserSettings.Defaults.IS_BOLD_FONT,
+        outlineEnabled = this[Keys.outlineEnabled] ?: UserSettings.Defaults.OUTLINE_ENABLED,
+        outlineColorHex = this[Keys.outlineColorHex] ?: UserSettings.Defaults.OUTLINE_COLOR_HEX,
+        translatedAudioDelayMs = this[Keys.translatedAudioDelayMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_DELAY_MS,
+        translatedAudioBufferMs = this[Keys.translatedAudioBufferMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_BUFFER_MS,
         bilingual = this[Keys.bilingual] ?: UserSettings.Defaults.BILINGUAL,
         captionsEnabled = this[Keys.captionsEnabled] ?: UserSettings.Defaults.CAPTIONS_ENABLED,
         playTranslatedAudio = this[Keys.playTranslatedAudio]
