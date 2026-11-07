@@ -455,6 +455,54 @@ fun SettingsScreen(
                 fontSize = 12.sp,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "Độ trễ âm thanh dịch: ${settings.translatedAudioDelayMs / 1000f} giây",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    text = "Chỉ trì hoãn giọng dịch để có thêm thời gian nhận dạng và dịch; âm thanh gốc không bị trì hoãn.",
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    listOf(0, 1, 2, 3, 5, 10).forEach { seconds ->
+                        val selected = settings.translatedAudioDelayMs == seconds * 1000
+                        Text(
+                            text = "${seconds}s",
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(
+                                    if (selected) Booth.Accent.copy(alpha = 0.16f)
+                                    else MiuixTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(10.dp),
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (selected) Booth.Accent
+                                    else MiuixTheme.colorScheme.outline.copy(alpha = 0.25f),
+                                    shape = RoundedCornerShape(10.dp),
+                                )
+                                .clickable {
+                                    viewModel.update { it.copy(translatedAudioDelayMs = seconds * 1000) }
+                                }
+                                .padding(vertical = 10.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            fontSize = 12.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected) Booth.Accent else MiuixTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
             SettingSwitchRow(
                 title = stringResource(R.string.settings_duck_original),
                 summary = stringResource(R.string.settings_duck_original_summary),
