@@ -32,6 +32,11 @@ class TranslatedAudioPlayer {
     @Volatile
     private var volume = 0.8f
 
+    @Volatile
+    private var delayMs = 0L
+
+    private val delayPending = AtomicBoolean(true)
+
     private val queue = LinkedBlockingQueue<ByteArray>(MAX_QUEUE_CHUNKS)
     private val trackRef = AtomicReference<AudioTrack?>(null)
 
@@ -53,14 +58,20 @@ class TranslatedAudioPlayer {
     fun setEnabled(value: Boolean) {
         val was = enabled.getAndSet(value)
         if (!value && was) {
+            delayPending.set(true)
             queue.clear()
             runCatching {
                 trackRef.get()?.pause()
                 trackRef.get()?.flush()
             }
         } else if (value && !was) {
+            delayPending.set(true)
             runCatching { trackRef.get()?.play() }
         }
+    }
+
+    fun setDelayMs(value: Int) {
+        delayMs = value.coerceIn(0, 10_000).toLong()
     }
 
     fun setVolume(value: Float) {
@@ -123,6 +134,15 @@ class TranslatedAudioPlayer {
                 continue
             }
             if (!enabled.get()) continue
+            if (delayPending.compareAndSet(true, false)) {
+                var remainingDelay = delayMs
+                while (remainingDelay > 0L && enabled.get() && !released.get()) {
+                    val slice = remainingDelay.coerceAtMost(50L)
+                    try { Thread.sleep(slice) } catch (_: InterruptedException) { break }
+                    remainingDelay -= slice
+                }
+            }
+            if (!enabled.get() || released.get()) continue
             try {
                 val track = ensureTrack(sampleRate) ?: continue
                 val toWrite = applyDigitalGainIfNeeded(chunk)

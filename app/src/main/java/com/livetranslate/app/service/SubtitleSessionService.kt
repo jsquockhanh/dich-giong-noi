@@ -260,6 +260,7 @@ class SubtitleSessionService : Service() {
             startSpeechWorker(player)
             applyTranslatedAudioEnabled()
             player.setVolume(currentSettings.translatedVolume)
+            player.setDelayMs(currentSettings.translatedAudioDelayMs)
 
             eventsJob = scope.launch {
                 launch {
@@ -366,6 +367,7 @@ class SubtitleSessionService : Service() {
                     }
                     applyTranslatedAudioEnabled()
                     player.setVolume(s.translatedVolume)
+                    player.setDelayMs(s.translatedAudioDelayMs)
                     if (prev.playTranslatedAudio && !s.playTranslatedAudio) {
                         Log.i(TAG, "translated audio disabled")
                     }

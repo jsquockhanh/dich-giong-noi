@@ -297,6 +297,35 @@ fun SettingsScreen(
                     valueRange = 0f..0.95f,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                OutlinedTextField(
+                    value = settings.textColorHex,
+                    onValueChange = { value -> if (value.length <= 9) viewModel.update { it.copy(textColorHex = value) } },
+                    label = { androidx.compose.material3.Text("Màu chữ phụ đề (HEX)") },
+                    singleLine = true,
+                    colors = fieldColors,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = settings.backgroundColorHex,
+                    onValueChange = { value -> if (value.length <= 9) viewModel.update { it.copy(backgroundColorHex = value) } },
+                    label = { androidx.compose.material3.Text("Màu nền phụ đề (HEX)") },
+                    singleLine = true,
+                    colors = fieldColors,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text("Mã màu ví dụ: #FFFFFF, #000000, #FFCC00", fontSize = 12.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                SettingSwitchRow(
+                    title = "Chữ phụ đề in đậm",
+                    summary = "Bật hoặc tắt kiểu chữ đậm trên phụ đề nổi",
+                    checked = settings.isBoldFont,
+                    onCheckedChange = { value -> viewModel.update { it.copy(isBoldFont = value) } },
+                )
+                SettingSwitchRow(
+                    title = "Hiện logo nổi",
+                    summary = "Cấu hình lưu trạng thái; điều khiển logo nổi cần được bật trong dịch vụ overlay",
+                    checked = settings.showFloatingLogo,
+                    onCheckedChange = { value -> viewModel.update { it.copy(showFloatingLogo = value) } },
+                )
             }
             SettingSwitchRow(
                 title = stringResource(R.string.settings_bilingual),
@@ -399,6 +428,20 @@ fun SettingsScreen(
                     text = stringResource(R.string.settings_voice_volume_hint),
                     fontSize = 12.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+                Text("Độ trễ âm thanh dịch: ${settings.translatedAudioDelayMs} ms", fontSize = 13.sp)
+                Slider(
+                    value = settings.translatedAudioDelayMs.toFloat(),
+                    onValueChange = { value -> viewModel.update { it.copy(translatedAudioDelayMs = value.toInt()) } },
+                    valueRange = 0f..5000f,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text("Bộ đệm âm thanh: ${settings.translatedAudioBufferMs} ms", fontSize = 13.sp)
+                Slider(
+                    value = settings.translatedAudioBufferMs.toFloat(),
+                    onValueChange = { value -> viewModel.update { it.copy(translatedAudioBufferMs = value.toInt()) } },
+                    valueRange = 0f..2000f,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

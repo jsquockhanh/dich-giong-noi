@@ -726,9 +726,22 @@ class SubtitleOverlayController(
 
     private fun applySettingsToViews() {
         val alpha = (settings.backgroundAlpha * 255).toInt().coerceIn(0, 242)
-        (rootView?.background as? GradientDrawable)?.setColor(Color.argb(alpha, 0, 0, 0))
-        inputView?.setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp * 0.9f)
-        outputView?.setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp)
+        val backgroundColor = runCatching { Color.parseColor(settings.backgroundColorHex) }.getOrDefault(Color.BLACK)
+        val textColor = runCatching { Color.parseColor(settings.textColorHex) }.getOrDefault(Color.WHITE)
+        (rootView?.background as? GradientDrawable)?.setColor(
+            Color.argb(alpha, Color.red(backgroundColor), Color.green(backgroundColor), Color.blue(backgroundColor)),
+        )
+        val face = if (settings.isBoldFont) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        inputView?.apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp * 0.9f)
+            setTextColor(textColor)
+            typeface = face
+        }
+        outputView?.apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, settings.fontSizeSp)
+            setTextColor(textColor)
+            typeface = face
+        }
     }
 
     private fun applyTranscriptsToViews() {

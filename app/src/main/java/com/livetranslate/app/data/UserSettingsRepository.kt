@@ -21,6 +21,14 @@ class UserSettingsRepository(private val context: Context) {
         val targetLanguage = stringPreferencesKey("target_language")
         val sourceLanguage = stringPreferencesKey("source_language")
         val fontSizeSp = floatPreferencesKey("font_size_sp")
+        val textColorHex = stringPreferencesKey("text_color_hex")
+        val backgroundColorHex = stringPreferencesKey("background_color_hex")
+        val isBoldFont = booleanPreferencesKey("is_bold_font")
+        val translatedAudioBufferMs = intPreferencesKey("translated_audio_buffer_ms")
+        val translatedAudioDelayMs = intPreferencesKey("translated_audio_delay_ms")
+        val videoDelayMs = intPreferencesKey("video_delay_ms")
+        val originalAudioDelayMs = intPreferencesKey("original_audio_delay_ms")
+        val showFloatingLogo = booleanPreferencesKey("show_floating_logo")
         val backgroundAlpha = floatPreferencesKey("background_alpha")
         val bilingual = booleanPreferencesKey("bilingual")
         val captionsEnabled = booleanPreferencesKey("captions_enabled")
@@ -48,6 +56,14 @@ class UserSettingsRepository(private val context: Context) {
             prefs[Keys.targetLanguage] = next.targetLanguageCode
             prefs[Keys.sourceLanguage] = next.sourceLanguageCode
             prefs[Keys.fontSizeSp] = next.fontSizeSp
+            prefs[Keys.textColorHex] = next.textColorHex
+            prefs[Keys.backgroundColorHex] = next.backgroundColorHex
+            prefs[Keys.isBoldFont] = next.isBoldFont
+            prefs[Keys.translatedAudioBufferMs] = next.translatedAudioBufferMs.coerceIn(0, 2000)
+            prefs[Keys.translatedAudioDelayMs] = next.translatedAudioDelayMs.coerceIn(0, 10000)
+            prefs[Keys.videoDelayMs] = next.videoDelayMs.coerceIn(0, 10000)
+            prefs[Keys.originalAudioDelayMs] = next.originalAudioDelayMs.coerceIn(0, 10000)
+            prefs[Keys.showFloatingLogo] = next.showFloatingLogo
             prefs[Keys.backgroundAlpha] = next.backgroundAlpha
             prefs[Keys.bilingual] = next.bilingual
             prefs[Keys.captionsEnabled] = next.captionsEnabled
@@ -84,6 +100,14 @@ class UserSettingsRepository(private val context: Context) {
             this[Keys.sourceLanguage] ?: UserSettings.Defaults.SOURCE_LANGUAGE,
         ),
         fontSizeSp = this[Keys.fontSizeSp] ?: UserSettings.Defaults.FONT_SIZE_SP,
+        textColorHex = this[Keys.textColorHex] ?: UserSettings.Defaults.TEXT_COLOR_HEX,
+        backgroundColorHex = this[Keys.backgroundColorHex] ?: UserSettings.Defaults.BACKGROUND_COLOR_HEX,
+        isBoldFont = this[Keys.isBoldFont] ?: UserSettings.Defaults.IS_BOLD_FONT,
+        translatedAudioBufferMs = this[Keys.translatedAudioBufferMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_BUFFER_MS,
+        translatedAudioDelayMs = this[Keys.translatedAudioDelayMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_DELAY_MS,
+        videoDelayMs = this[Keys.videoDelayMs] ?: UserSettings.Defaults.VIDEO_DELAY_MS,
+        originalAudioDelayMs = this[Keys.originalAudioDelayMs] ?: UserSettings.Defaults.ORIGINAL_AUDIO_DELAY_MS,
+        showFloatingLogo = this[Keys.showFloatingLogo] ?: UserSettings.Defaults.SHOW_FLOATING_LOGO,
         backgroundAlpha = this[Keys.backgroundAlpha] ?: UserSettings.Defaults.BACKGROUND_ALPHA,
         bilingual = this[Keys.bilingual] ?: UserSettings.Defaults.BILINGUAL,
         captionsEnabled = this[Keys.captionsEnabled] ?: UserSettings.Defaults.CAPTIONS_ENABLED,
