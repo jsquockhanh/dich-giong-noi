@@ -1,9 +1,6 @@
 package com.livetranslate.app.ui.settings
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -302,35 +299,33 @@ fun SettingsScreen(
                     valueRange = 0f..0.95f,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text("Màu chữ phụ đề", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                ColorSwatchRows(
-                    colors = listOf("#FFFFFF", "#000000", "#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#007AFF", "#AF52DE", "#FF2D55", "#8E8E93"),
-                    selected = settings.textColorHex,
-                    onSelect = { color -> viewModel.update { it.copy(textColorHex = color) } },
+                Text(
+                    text = "Xem trước phụ đề",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
                 )
-                Text("Màu nền phụ đề", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                ColorSwatchRows(
-                    colors = listOf("#000000", "#FFFFFF", "#263238", "#37474F", "#0D47A1", "#4A148C", "#B71C1C", "#1B5E20", "#E65100", "#607D8B"),
-                    selected = settings.backgroundColorHex,
-                    onSelect = { color -> viewModel.update { it.copy(backgroundColorHex = color) } },
-                )
-                SettingSwitchRow(
-                    title = "Chữ phụ đề in đậm",
-                    summary = "Bật hoặc tắt kiểu chữ đậm trên phụ đề nổi",
-                    checked = settings.isBoldFont,
-                    onCheckedChange = { enabled -> viewModel.update { it.copy(isBoldFont = enabled) } },
-                )
-                SettingSwitchRow(
-                    title = "Viền chữ phụ đề",
-                    summary = "Làm nổi chữ bằng viền tương phản",
-                    checked = settings.outlineEnabled,
-                    onCheckedChange = { enabled -> viewModel.update { it.copy(outlineEnabled = enabled) } },
-                )
-                Text("Màu viền chữ", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                ColorSwatchRows(
-                    colors = listOf("#000000", "#FFFFFF"),
-                    selected = settings.outlineColorHex,
-                    onSelect = { color -> viewModel.update { it.copy(outlineColorHex = color) } },
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color.Black.copy(alpha = settings.backgroundAlpha.coerceIn(0f, 0.95f)),
+                            RoundedCornerShape(14.dp),
+                        )
+                        .padding(horizontal = 14.dp, vertical = 18.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "你好！
+Xin chào! Đây là phụ đề xem trước.",
+                        fontSize = settings.fontSizeSp.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                    )
+                }
+                Text(
+                    text = "Bản xem trước thay đổi theo cỡ chữ và độ mờ nền đang chọn.",
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
             }
             SettingSwitchRow(
@@ -435,31 +430,6 @@ fun SettingsScreen(
                     fontSize = 12.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
-                Text(
-                    text = "Độ trễ âm thanh dịch: ${"%.1f".format(settings.translatedAudioDelayMs / 1000f)} giây",
-                    fontSize = 13.sp,
-                )
-                Slider(
-                    value = settings.translatedAudioDelayMs / 1000f,
-                    onValueChange = { seconds -> viewModel.update { it.copy(translatedAudioDelayMs = (seconds * 1000).toInt()) } },
-                    valueRange = 0f..10f,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = "Bộ đệm âm thanh: ${"%.1f".format(settings.translatedAudioBufferMs / 1000f)} giây",
-                    fontSize = 13.sp,
-                )
-                Slider(
-                    value = settings.translatedAudioBufferMs / 1000f,
-                    onValueChange = { seconds -> viewModel.update { it.copy(translatedAudioBufferMs = (seconds * 1000).toInt()) } },
-                    valueRange = 0f..10f,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = "Thời gian hiển thị theo giây; ví dụ 2,0 giây = 2.000 ms.",
-                    fontSize = 12.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
             }
         }
 
@@ -502,36 +472,6 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(28.dp))
-    }
-}
-
-@Composable
-private fun ColorSwatchRows(
-    colors: List<String>,
-    selected: String,
-    onSelect: (String) -> Unit,
-) {
-    colors.chunked(5).forEach { rowColors ->
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            rowColors.forEach { hex ->
-                val color = runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(Color.White)
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .background(color, CircleShape)
-                        .border(
-                            width = if (selected.equals(hex, ignoreCase = true)) 3.dp else 1.dp,
-                            color = if (selected.equals(hex, ignoreCase = true)) Booth.Accent else MiuixTheme.colorScheme.outline,
-                            shape = CircleShape,
-                        )
-                        .clickable { onSelect(hex) },
-                )
-            }
-        }
     }
 }
 
