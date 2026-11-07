@@ -26,12 +26,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Signing remains optional for debug CI builds; no keystore is stored in the repository.
+    // Stable signing key is supplied by GitHub Actions Secrets or local.properties.
     val keystoreProperties = Properties().apply {
         rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
     }
     fun signingProp(name: String): String? =
-        (findProperty(name) as String?)?.takeIf { it.isNotBlank() } ?: keystoreProperties.getProperty(name)
+        (findProperty(name) as String?)?.takeIf { it.isNotBlank() }
+            ?: keystoreProperties.getProperty(name)
+            ?: System.getenv(name)
     fun requiredSigningProp(name: String): String =
         signingProp(name)
             ?: error("Missing signing property $name. Set KEYSTORE_FILE + $name (+ KEY_ALIAS / KEY_PASSWORD) in local.properties or pass them as -P flags. See README \"Signing\".")
@@ -47,7 +49,7 @@ android {
         }
     }
     if (signingConfigs.findByName("app") == null) {
-        logger.warn("live-translate: KEYSTORE_FILE is not configured — APKs will use the machine debug keystore.")
+        logger.warn("live-translate: stable keystore is not configured — APKs will use the machine debug keystore.")
     }
 
     buildTypes {

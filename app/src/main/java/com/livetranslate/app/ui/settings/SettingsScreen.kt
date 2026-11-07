@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -300,6 +304,32 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
+                    text = "Màu chữ phụ đề",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                ColorPalette(
+                    colors = listOf(
+                        "#FFFFFF", "#000000", "#F44336", "#FF9800", "#FFC107",
+                        "#4CAF50", "#2196F3", "#9C27B0", "#E91E63", "#9E9E9E",
+                    ),
+                    selected = settings.textColorHex,
+                    onSelect = { color -> viewModel.update { it.copy(textColorHex = color) } },
+                )
+                Text(
+                    text = "Màu nền phụ đề",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                ColorPalette(
+                    colors = listOf(
+                        "#000000", "#FFFFFF", "#263238", "#37474F", "#174EA6",
+                        "#4A148C", "#B71C1C", "#1B5E20", "#E65100", "#607D8B",
+                    ),
+                    selected = settings.backgroundColorHex,
+                    onSelect = { color -> viewModel.update { it.copy(backgroundColorHex = color) } },
+                )
+                Text(
                     text = "Xem trước phụ đề",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -308,24 +338,57 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            Color.Black.copy(alpha = settings.backgroundAlpha.coerceIn(0f, 0.95f)),
+                            runCatching { Color(android.graphics.Color.parseColor(settings.backgroundColorHex)) }
+                                .getOrDefault(Color.Black)
+                                .copy(alpha = settings.backgroundAlpha.coerceIn(0f, 0.95f)),
                             RoundedCornerShape(14.dp),
                         )
                         .padding(horizontal = 14.dp, vertical = 18.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "你好！\nXin chào! Đây là phụ đề xem trước.",
+                        text = "你好！\\nXin chào! Đây là phụ đề xem trước.",
                         fontSize = settings.fontSizeSp.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
+                        fontWeight = if (settings.isBoldFont) FontWeight.Bold else FontWeight.Normal,
+                        color = runCatching { Color(android.graphics.Color.parseColor(settings.textColorHex)) }
+                            .getOrDefault(Color.White),
+                        style = androidx.compose.ui.text.TextStyle(
+                            shadow = if (settings.outlineEnabled) {
+                                androidx.compose.ui.graphics.Shadow(
+                                    color = runCatching { Color(android.graphics.Color.parseColor(settings.outlineColorHex)) }
+                                        .getOrDefault(Color.Black),
+                                    offset = Offset(0f, 0f),
+                                    blurRadius = 3f,
+                                )
+                            } else null,
+                        ),
                     )
                 }
                 Text(
-                    text = "Bản xem trước thay đổi theo cỡ chữ và độ mờ nền đang chọn.",
+                    text = "Bản xem trước thay đổi ngay theo màu sắc, cỡ chữ và độ mờ nền.",
                     fontSize = 12.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
+                SettingSwitchRow(
+                    title = "Chữ phụ đề in đậm",
+                    summary = "Bật hoặc tắt kiểu chữ đậm trên phụ đề nổi",
+                    checked = settings.isBoldFont,
+                    onCheckedChange = { enabled -> viewModel.update { it.copy(isBoldFont = enabled) } },
+                )
+                SettingSwitchRow(
+                    title = "Viền chữ phụ đề",
+                    summary = "Làm nổi chữ bằng viền tương phản",
+                    checked = settings.outlineEnabled,
+                    onCheckedChange = { enabled -> viewModel.update { it.copy(outlineEnabled = enabled) } },
+                )
+                if (settings.outlineEnabled) {
+                    Text("Màu viền chữ", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    ColorPalette(
+                        colors = listOf("#000000", "#FFFFFF"),
+                        selected = settings.outlineColorHex,
+                        onSelect = { color -> viewModel.update { it.copy(outlineColorHex = color) } },
+                    )
+                }
             }
             SettingSwitchRow(
                 title = stringResource(R.string.settings_bilingual),
@@ -500,3 +563,43 @@ private fun VoiceChoiceRow(
     }
 }
 
+
+
+@Composable
+private fun ColorPalette(
+    colors: List<String>,
+    selected: String,
+    onSelect: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        colors.chunked(5).forEach { rowColors ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                rowColors.forEach { hex ->
+                    val swatchColor = runCatching {
+                        Color(android.graphics.Color.parseColor(hex))
+                    }.getOrDefault(Color.Gray)
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .size(42.dp)
+                            .background(swatchColor, CircleShape)
+                            .border(
+                                width = if (hex.equals(selected, ignoreCase = true)) 3.dp else 1.dp,
+                                color = if (hex.equals(selected, ignoreCase = true)) Booth.Accent
+                                    else MiuixTheme.colorScheme.outline.copy(alpha = 0.55f),
+                                shape = CircleShape,
+                            )
+                            .clickable { onSelect(hex) },
+                    )
+                }
+                repeat(5 - rowColors.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
