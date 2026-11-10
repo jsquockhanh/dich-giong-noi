@@ -12,3 +12,20 @@ GIOI HAN CAN BIET:
 - Goi nay chua co tinh nang chup man hinh/OCR theo vung chon va vuot chuyen vung. Phan nay can bo sung pipeline MediaProjection + OCR + giao dien chon vung rieng; khong duoc gia lap la da hoat dong.
 - Che do hoi thoai hien tai la doi chieu thu cong bang nut, chua tu dong phat hien ai dang noi va tu dong dao chieu.
 - Chua xuat APK. Thu build tai moi truong nay khong tai duoc Gradle distribution do moi truong khong co ket noi mang (UnknownHostException: services.gradle.org). Hay dung GitHub Actions de build va gui log neu co loi.
+
+CAP NHAT THEO YEU CAU QUOCTHANHJS
+
+4. Giam do tre am thanh dich:
+   - Phat PCM truc tiep tu luong Gemini Live, khong doi TTS tao lai tung cau.
+   - Mo cong dich sau don vi nhan dang dau tien thay vi doi du 3 tu.
+   - Mac dinh do tre am thanh la 0 ms; gia tri mac dinh cu 2000 ms duoc dua ve 0 ms.
+   - Phu de va giong dich van co cong tac bat/tat doc lap.
+   - Che do do tre thap su dung giong do Gemini Live cung cap; tuy chon Kore/Puck khong con duoc ap dung.
+5. Ngon ngu dich mac dinh la Tieng Viet (vi).
+6. Them lua chon ngon ngu giao dien: Theo he thong, Tieng Viet, Tieng Trung. Mac dinh theo ngon ngu he thong.
+7. Cap nhat muc Thong tin: hien ten quocthanhjs, ghi nhan ban chinh sua phat trien tu luoxiaoxin123 va giu lien ket GitHub goc.
+8. Tang phien ban len 0.4.4.
+
+KIEM TRA:
+- Cac tep XML da duoc kiem tra cu phap.
+- Chua the build APK tai moi truong nay vi khong tai duoc Gradle 9.3.1 tu services.gradle.org (loi DNS/khong co ket noi mang). ZIP la ma nguon da cap nhat, khong phai APK da build.
