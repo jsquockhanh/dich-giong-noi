@@ -29,7 +29,7 @@
   <string name="subtitle_output_text">Chữ phụ đề</string>
   <string name="subtitle_output_audio">Âm thanh dịch</string>
   <string name="subtitle_output_both">Cả chữ và âm thanh</string>
-  <string name="subtitle_output_hint">Có thể chọn chữ phụ đề, giọng đọc hoặc dùng đồng thời cả hai. Bản dịch đầu tiên chờ nhận dạng ít nhất 3 từ tiếng gốc.</string>
+  <string name="subtitle_output_hint">Có thể chọn chữ phụ đề, giọng đọc hoặc dùng đồng thời cả hai. Âm thanh dịch được phát ngay khi luồng dịch trả về dữ liệu.</string>
   <string name="subtitle_preview">Bản dịch gần đây</string>
   <string name="subtitle_pick_target">Chọn ngôn ngữ đích</string>
   <string name="subtitle_selected">Đã chọn</string>
@@ -63,6 +63,12 @@
   <string name="settings_remove_key">Xóa</string>
   <string name="settings_testing">Đang kiểm tra…</string>
   <string name="settings_appearance">Giao diện phụ đề</string>
+  <string name="settings_interface_language">Ngôn ngữ giao diện</string>
+  <string name="settings_interface_language_hint">Mặc định theo ngôn ngữ hệ thống. Bạn cũng có thể chọn thủ công.</string>
+  <string name="settings_language_system">Theo hệ thống</string>
+  <string name="settings_language_vietnamese">Tiếng Việt</string>
+  <string name="settings_language_chinese">中文</string>
+  <string name="settings_modified_from">Bản chỉnh sửa của quocthanhjs, phát triển từ %1$s</string>
   <string name="settings_font_size">Cỡ chữ %1$d sp</string>
   <string name="settings_bg_alpha">Độ mờ nền %1$d%%</string>
   <string name="settings_bilingual">Song ngữ</string>
@@ -77,7 +83,7 @@
   <string name="settings_voice_gender">Giọng dịch</string>
   <string name="settings_voice_female">Giọng nữ</string>
   <string name="settings_voice_male">Giọng nam</string>
-  <string name="settings_voice_region_hint">Chọn giọng đọc cho âm thanh dịch. Cần kết nối mạng và API TTS hỗ trợ.</string>
+  <string name="settings_voice_region_hint">Âm thanh được phát trực tiếp từ Gemini Live để giảm độ trễ; giọng Kore/Puck không áp dụng trong chế độ này.</string>
   <string name="settings_duck_original">Giảm âm thanh gốc</string>
   <string name="settings_duck_original_summary">Yêu cầu Android giảm âm lượng ứng dụng đang phát khi giọng dịch chạy. Tùy thiết bị mà tính năng này có thể khác nhau.</string>
   <string name="settings_voice_volume">Âm lượng giọng dịch %1$d%%</string>

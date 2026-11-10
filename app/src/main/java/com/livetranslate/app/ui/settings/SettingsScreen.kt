@@ -1,5 +1,10 @@
 package com.livetranslate.app.ui.settings
 
+import android.content.Intent
+import android.net.Uri
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +42,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.livetranslate.app.R
+import com.livetranslate.app.BuildConfig
 import com.livetranslate.app.data.ApiKeyStore
 import com.livetranslate.app.ui.components.PageTitle
 import com.livetranslate.app.ui.components.SectionCard
@@ -70,6 +77,8 @@ fun SettingsScreen(
     val apiKeyFields by viewModel.apiKeyFields.collectAsStateWithLifecycle()
     val testResult by viewModel.testResult.collectAsStateWithLifecycle()
     val testing by viewModel.testing.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val appLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
     var endpointField by remember {
         mutableStateOf(TextFieldValue(settings.endpoint, TextRange(settings.endpoint.length)))
@@ -122,6 +131,38 @@ fun SettingsScreen(
             title = stringResource(R.string.settings_title),
             subtitle = stringResource(R.string.settings_subtitle),
         )
+
+        SmallTitle(
+            text = stringResource(R.string.settings_interface_language),
+            modifier = Modifier.padding(horizontal = 24.dp),
+        )
+        SectionCard {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_interface_language_hint),
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+                listOf(
+                    Triple("system", R.string.settings_language_system, ""),
+                    Triple("vi", R.string.settings_language_vietnamese, "vi"),
+                    Triple("zh", R.string.settings_language_chinese, "zh"),
+                ).forEach { (key, label, tag) ->
+                    VoiceChoiceRow(
+                        label = stringResource(label),
+                        selected = if (key == "system") appLanguage.isBlank() else appLanguage.startsWith(tag, ignoreCase = true),
+                        onClick = {
+                            val locales = if (key == "system") LocaleListCompat.getEmptyLocaleList()
+                            else LocaleListCompat.forLanguageTags(tag)
+                            AppCompatDelegate.setApplicationLocales(locales)
+                        },
+                    )
+                }
+            }
+        }
 
         SmallTitle(
             text = stringResource(R.string.settings_api),
@@ -426,23 +467,12 @@ fun SettingsScreen(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                VoiceChoiceRow(
-                    label = stringResource(R.string.settings_voice_female) + " · Kore",
-                    selected = settings.translatedVoiceName == "Kore",
-                    onClick = { viewModel.update { it.copy(translatedVoiceName = "Kore") } },
-                )
-                VoiceChoiceRow(
-                    label = stringResource(R.string.settings_voice_male) + " · Puck",
-                    selected = settings.translatedVoiceName == "Puck",
-                    onClick = { viewModel.update { it.copy(translatedVoiceName = "Puck") } },
+                Text(
+                    text = stringResource(R.string.settings_voice_region_hint),
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
             }
-            Text(
-                text = stringResource(R.string.settings_voice_region_hint),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                fontSize = 12.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
             SettingSwitchRow(
                 title = stringResource(R.string.settings_play_voice),
                 summary = stringResource(R.string.settings_play_voice_summary),
@@ -575,8 +605,32 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    text = "Đặng Quốc Thanh",
-                    fontWeight = FontWeight.Medium,
+                    text = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+                    fontSize = 13.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+                Text(
+                    text = "quocthanhjs",
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = stringResource(R.string.settings_modified_from, "luoxiaoxin123"),
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+                Text(
+                    text = stringResource(R.string.settings_github) + ": https://github.com/luoxiaoxin123/live-translate",
+                    color = Booth.Accent,
+                    modifier = Modifier.clickable {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/luoxiaoxin123/live-translate")))
+                    },
+                )
+                TextButton(
+                    text = stringResource(R.string.settings_github_open),
+                    onClick = {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/luoxiaoxin123/live-translate")))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

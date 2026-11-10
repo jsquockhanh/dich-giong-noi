@@ -36,7 +36,7 @@ data class UserSettings(
         const val ENDPOINT =
             "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent"
         const val MODEL_ID = "gemini-3.5-live-translate-preview"
-        const val TARGET_LANGUAGE = "zh-Hans"
+        const val TARGET_LANGUAGE = "vi"
         const val SOURCE_LANGUAGE = "auto"
         const val FONT_SIZE_SP = 18f
         const val TEXT_COLOR_HEX = "#FFFFFF"
@@ -45,8 +45,8 @@ data class UserSettings(
         const val IS_BOLD_FONT = true
         const val OUTLINE_ENABLED = true
         const val OUTLINE_COLOR_HEX = "#000000"
-        const val TRANSLATED_AUDIO_DELAY_MS = 2000
-        const val TRANSLATED_AUDIO_BUFFER_MS = 2000
+        const val TRANSLATED_AUDIO_DELAY_MS = 0
+        const val TRANSLATED_AUDIO_BUFFER_MS = 0
         const val BILINGUAL = false
         const val CAPTIONS_ENABLED = true
         const val PLAY_TRANSLATED_AUDIO = false

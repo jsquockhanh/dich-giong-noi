@@ -55,6 +55,12 @@
     <string name="settings_add_key">添加</string>
     <string name="settings_remove_key">删除</string>
     <string name="settings_testing">测试中…</string>
+    <string name="settings_interface_language">界面语言</string>
+    <string name="settings_interface_language_hint">默认跟随系统语言，也可以手动选择。</string>
+    <string name="settings_language_system">跟随系统</string>
+    <string name="settings_language_vietnamese">越南语</string>
+    <string name="settings_language_chinese">中文</string>
+    <string name="settings_modified_from">quocthanhjs 修改，基于 %1$s</string>
     <string name="settings_appearance">字幕外观</string>
     <string name="settings_font_size">字体大小 %1$d sp · 系统默认字体</string>
     <string name="settings_bg_alpha">背景透明度 %1$d%%</string>

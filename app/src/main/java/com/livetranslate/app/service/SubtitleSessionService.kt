@@ -66,7 +66,7 @@ class SubtitleSessionService : Service() {
     private var speechWorkerJob: Job? = null
     private var speechIdleFlushJob: Job? = null
     private val speechSentenceBuffer = SpeechSentenceBuffer()
-    @Volatile private var customVoiceUnavailable = false
+    @Volatile private var customVoiceUnavailable = true
     private var overlay: SubtitleOverlayController? = null
     private var settingsJob: Job? = null
     private var eventsJob: Job? = null
@@ -178,7 +178,7 @@ class SubtitleSessionService : Service() {
         pendingOutputTranscripts.clear()
         pendingOutputAudio.clear()
         speechSentenceBuffer.reset()
-        customVoiceUnavailable = false
+        customVoiceUnavailable = true
         startAsForeground()
 
         val app = application as LiveTranslateApp
@@ -856,7 +856,7 @@ class SubtitleSessionService : Service() {
     }
 
     companion object {
-        private const val TRANSLATION_START_UNITS = 3
+        private const val TRANSLATION_START_UNITS = 1
         private const val MAX_PENDING_TRANSLATION_AUDIO_CHUNKS = 100
         private const val MAX_PENDING_TRANSLATION_TRANSCRIPTS = 128
         private const val SPEECH_IDLE_FLUSH_MS = 650L

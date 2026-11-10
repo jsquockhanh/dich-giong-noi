@@ -109,7 +109,7 @@ class UserSettingsRepository(private val context: Context) {
         isBoldFont = this[Keys.isBoldFont] ?: UserSettings.Defaults.IS_BOLD_FONT,
         outlineEnabled = this[Keys.outlineEnabled] ?: UserSettings.Defaults.OUTLINE_ENABLED,
         outlineColorHex = this[Keys.outlineColorHex] ?: UserSettings.Defaults.OUTLINE_COLOR_HEX,
-        translatedAudioDelayMs = this[Keys.translatedAudioDelayMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_DELAY_MS,
+        translatedAudioDelayMs = (this[Keys.translatedAudioDelayMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_DELAY_MS).let { if (it == 2000) 0 else it },
         translatedAudioBufferMs = this[Keys.translatedAudioBufferMs] ?: UserSettings.Defaults.TRANSLATED_AUDIO_BUFFER_MS,
         bilingual = this[Keys.bilingual] ?: UserSettings.Defaults.BILINGUAL,
         captionsEnabled = this[Keys.captionsEnabled] ?: UserSettings.Defaults.CAPTIONS_ENABLED,
