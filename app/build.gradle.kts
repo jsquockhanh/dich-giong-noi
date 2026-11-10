@@ -21,8 +21,8 @@ android {
         minSdk = 29
         targetSdk = 35
         // CI can override: -PVERSION_CODE=3 -PVERSION_NAME=0.2.0
-        versionCode = (findProperty("VERSION_CODE") as String?)?.toIntOrNull() ?: 2
-        versionName = (findProperty("VERSION_NAME") as String?) ?: "0.2.0"
+        versionCode = (findProperty("VERSION_CODE") as String?)?.toIntOrNull() ?: 3
+        versionName = (findProperty("VERSION_NAME") as String?) ?: "0.4.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -105,6 +105,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     implementation("androidx.activity:activity-compose:1.10.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
